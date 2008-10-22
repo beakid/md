@@ -12,13 +12,14 @@ if($_POST["action"] == "draft_pack_of_the_day")
 	}
 	else
 	{
-		mysql_query("INSERT INTO md_vote (fk_card_id, fk_pack_id, vote_ip) VALUES ('$_POST[chosen_card]','$_POST[pack_id]','$_SERVER[REMOTE_ADDR]')");
+		mysql_query("INSERT INTO md_vote (fk_card_id, fk_pack_id, vote_ip, fk_user_id) VALUES ('$_POST[chosen_card]','$_POST[pack_id]','$_SERVER[REMOTE_ADDR]','$_SESSION[md_userid]')");
 	}
 }
 ?>
 <?=printHeader("MagicDraft","home")?>
 	<div id="content">
 		<div id="left">
+			<? if(!$_SESSION[md_userid]) {?>
 			<div class="box olive" id="welcome_box">
 				<img src="<?=$path;?>/images/header_welcome.png" alt="Welcome!" class="headerpic" />
 				<p class="text">Can you make the right picks? Improve your skills in drafting Magic the Gathering here with us!
@@ -26,7 +27,7 @@ if($_POST["action"] == "draft_pack_of_the_day")
 				<br /><br />
 				<img src="<?=$path;?>/images/user_add.png" class="avatar" alt="" /> <a href="register/">Register for free!</a>
 				</p>
-			</div>
+			</div><? } ?>
 
 
 			<div class="box orange">
@@ -60,9 +61,9 @@ if($_POST["action"] == "draft_pack_of_the_day")
 		</div>
 		<div id="middle">
 			<?
-			#add_pack("Lorwyn",0,0,0,0);
-			$latest_pack_id = mysql_result(mysql_query("SELECT pk_pack_id FROM md_pack ORDER BY pk_pack_id DESC LIMIT 0,1"),0);
-			$chosen_card = @mysql_result(mysql_query("SELECT fk_card_id FROM md_vote WHERE fk_pack_id = $latest_pack_id AND vote_ip = '$_SERVER[REMOTE_ADDR]'"),0);
+			$latest_pack_id = mysql_result(mysql_query("SELECT pk_pack_id FROM md_pack WHERE pack_type = 'firstpage' ORDER BY pk_pack_id DESC LIMIT 0,1"),0);
+			if($_SESSION["md_userid"]) $chosen_card = @mysql_result(mysql_query("SELECT fk_card_id FROM md_vote WHERE fk_pack_id = $latest_pack_id AND fk_user_id = '$_SESSION[md_userid]'"),0);
+			else $chosen_card = @mysql_result(mysql_query("SELECT fk_card_id FROM md_vote WHERE fk_pack_id = $latest_pack_id AND vote_ip = '$_SERVER[REMOTE_ADDR]'"),0);
 			?>
 			<h1><span class="orange">Pack of the day</span> <? if($chosen_card) { ?>Thanks for your pick!<? } else { ?>What would you pick?<? } ?></h1>
 			
@@ -182,6 +183,8 @@ if($_POST["action"] == "draft_pack_of_the_day")
 						?>
 					</ol>
 					</p>
+					<? if(!$_SESSION["md_userid"]) {?>
+					<p class="grey small">Not you who picked this card? Login to pick your own card!</p><? } ?>
 				</div>
 			<?
 			}?>
@@ -191,3 +194,6 @@ if($_POST["action"] == "draft_pack_of_the_day")
 	</div>
 </body>
 </html>
+<?
+#add_pack("Lorwyn",0,0,0,0,"firstpage");
+?>

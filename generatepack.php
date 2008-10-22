@@ -1,10 +1,10 @@
 <?php
-function add_pack($exp,$draft_id, $pack_number, $user_id, $seat_number) {
+function add_pack($exp,$draft_id, $pack_number, $user_id, $seat_number, $pack_type) {
 global $_REQUEST;
 $exp = mysql_result(mysql_query("SELECT pk_exp_id FROM md_exp WHERE exp_name = '".addslashes($exp)."'"),0);
 
 	//create packrow in md_pack and generate pk_pack_id
-	mysql_query("INSERT INTO md_pack(fk_draft_id, fk_exp_id, pack_number, fk_user_id, seat_number) SELECT '$draft_id', pk_exp_id, '$pack_number', '$user_id', '$seat_number' FROM md_exp WHERE pk_exp_id = '$exp'");
+	mysql_query("INSERT INTO md_pack(fk_draft_id, fk_exp_id, pack_number, fk_user_id, seat_number, pack_type) SELECT '$draft_id', pk_exp_id, '$pack_number', '$user_id', '$seat_number', '$pack_type' FROM md_exp WHERE pk_exp_id = '$exp'");
 	$pk_pack_id = mysql_insert_id();
 
 	//foilpack or not?

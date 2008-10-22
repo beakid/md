@@ -292,8 +292,8 @@ span.orange
 
 #pickbutton
 {
-	float: right;
-	margin-right: 75px;
+	clear: both;
+	margin-top: 10px;
 }
 #pick_result
 {
