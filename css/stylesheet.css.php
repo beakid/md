@@ -292,8 +292,8 @@ span.orange
 
 #pickbutton
 {
-	clear: both;
-	margin-top: 10px;
+	float: right;
+	margin-right: 75px;
 }
 #pick_result
 {
@@ -833,7 +833,7 @@ span.pointer:hover
 }
 .roundbox.grey
 {
-	width: 195px;
+	width: 221px;
 	padding: 10px;
 	padding-top: 15px;
 	color: #000;
@@ -842,7 +842,7 @@ span.pointer:hover
 }
 .roundbox.grey.bottom
 {
-	width: 215px;
+	width: 231px;
 	height: 20px;
 	margin-top: -24px;
 	background-image: url('../images/roundbox_grey_bottom.png');

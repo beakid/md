@@ -26,11 +26,12 @@
 					<?
 					$pack_info = mysql_fetch_row($pack_id_result);
 					//denna måste skrivas om: cards ska väck, vi ska köra våra egna slipade tabeller
-					$cards = mysql_query("SELECT cards.name, card_colortag, version, md_packcard.fk_card_id, exp, packcard_is_foil, pk_packcard_id, rarity, stats_rating FROM md_packcard, md_cards 
-						INNER JOIN cards ON md_packcard.fk_card_id = id 
+					$cards = mysql_query("SELECT md_cards.card_name AS name, card_colortag, '' AS version, md_packcard.fk_card_id, exp_name AS exp, packcard_is_foil, pk_packcard_id, card_rarity, stats_rating FROM md_packcard
+						INNER JOIN md_cards ON md_packcard.fk_card_id = pk_card_id
+						INNER JOIN md_exp ON fk_exp_id = pk_exp_id
 						LEFT OUTER JOIN md_stats ON md_packcard.fk_card_id = md_stats.fk_card_id
-						WHERE fk_pack_id = $pack_info[0] AND fk_user_id = 0 AND md_cards.pk_card_id = cards.id
-						ORDER BY packcard_is_foil DESC, rarity = 'R' DESC, rarity = 'U' DESC, rarity = 'C' DESC");
+						WHERE fk_pack_id = $pack_info[0] AND fk_user_id = 0
+						ORDER BY packcard_is_foil DESC, card_rarity = 'R' DESC, card_rarity = 'U' DESC, card_rarity = 'C' DESC");
 					?>
 					<h1>#<?=$draft_info[present_pack];?> <?=$pack_info[1];?> <span class="orange"><?=numeric(16-mysql_num_rows($cards));?> pick</span></h1>
 
@@ -45,13 +46,13 @@
 					{
 						$bildexp = eregi_replace(' ',"", stripslashes($card[exp]));
 						$bildexp = eregi_replace("'","", strtolower($bildexp));
-						$firstcard_src = "/kortbilder/".$bildexp."/".cardname2filename($card[name],$card[version]);
+						$firstcard_src = "http://www.svenskamagic.com/kortbilder/".$bildexp."/".cardname2filename($card[name],$card[version]);
 					}
 					$x++;
-					$mouseover = "onmouseover=\"viewCard('/kortbilder/".$bildexp."/".cardname2filename($card[name],$card[version])."');\"
+					$mouseover = "onmouseover=\"viewCard('http://www.svenskamagic.com/kortbilder/".$bildexp."/".cardname2filename($card[name],$card[version])."');\"
 						onclick=\"javascript:selectCard('card".$card[pk_packcard_id]."', '".$card[pk_packcard_id]."'); javascript:increaseZindex('card".$card[pk_packcard_id]."');\""
 				?>
-				<div class="card shadow" style="z-index: <?=$x;?>;" id="card<?=$card[pk_packcard_id];?>"><? if($card[packcard_is_foil]) {?><div class="foil" <?=$mouseover;?>></div><? } ?><img id="cardimg_<?=$x;?>" src="/kortbilder/<?=$bildexp;?>/<?=cardname2filename($card[name],$card[version]);?>"<? if(!$card[packcard_is_foil]) echo " ".$mouseover;?> alt="<?=stripslashes($card[name]);?>" class="cardpic" />
+				<div class="card shadow" style="z-index: <?=$x;?>;" id="card<?=$card[pk_packcard_id];?>"><? if($card[packcard_is_foil]) {?><div class="foil" <?=$mouseover;?>></div><? } ?><img id="cardimg_<?=$x;?>" src="http://www.svenskamagic.com/kortbilder/<?=$bildexp;?>/<?=cardname2filename($card[name],$card[version]);?>"<? if(!$card[packcard_is_foil]) echo " ".$mouseover;?> alt="<?=stripslashes($card[name]);?>" class="cardpic" />
 				</div>
 				<input type="hidden" name="cardarray[<?=$card[fk_card_id];?>]" value="<?=$card[stats_rating];?>" />
 				<input type="hidden" name="colorarray[<?=$card[fk_card_id];?>]" value="<?=$card[colortag];?>" />

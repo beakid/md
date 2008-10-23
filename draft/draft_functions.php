@@ -134,11 +134,11 @@ if($_POST["action"] == "draft") {
 	//just nu siktar vi bara på färger man man kan tänka sig att väga in critters/etc oxå
 	//rad1-5 = färgerna WUBRG
 	//rad6 antal kort totalt
-	$color_chk = mysql_query("SELECT count(*) as color FROM md_packcard, md_cards WHERE fk_user_id = $_SESSION[md_userid] AND fk_card_id = pk_card_id AND find_in_set('W',colortag)
-	UNION ALL SELECT count(*) as color FROM md_packcard, md_cards WHERE fk_user_id = $_SESSION[md_userid] AND fk_card_id = pk_card_id AND find_in_set('U',colortag)
-	UNION ALL SELECT count(*) as color FROM md_packcard, md_cards WHERE fk_user_id = $_SESSION[md_userid] AND fk_card_id = pk_card_id AND find_in_set('R',colortag)
-	UNION ALL SELECT count(*) as color FROM md_packcard, md_cards WHERE fk_user_id = $_SESSION[md_userid] AND fk_card_id = pk_card_id AND find_in_set('B',colortag)
-	UNION ALL SELECT count(*) as color FROM md_packcard, md_cards WHERE fk_user_id = $_SESSION[md_userid] AND fk_card_id = pk_card_id AND find_in_set('G',colortag)
+	$color_chk = mysql_query("SELECT count(*) as color FROM md_packcard, md_cards WHERE fk_user_id = $_SESSION[md_userid] AND fk_card_id = pk_card_id AND find_in_set('W',card_colortag)
+	UNION ALL SELECT count(*) as color FROM md_packcard, md_cards WHERE fk_user_id = $_SESSION[md_userid] AND fk_card_id = pk_card_id AND find_in_set('U',card_colortag)
+	UNION ALL SELECT count(*) as color FROM md_packcard, md_cards WHERE fk_user_id = $_SESSION[md_userid] AND fk_card_id = pk_card_id AND find_in_set('R',card_colortag)
+	UNION ALL SELECT count(*) as color FROM md_packcard, md_cards WHERE fk_user_id = $_SESSION[md_userid] AND fk_card_id = pk_card_id AND find_in_set('B',card_colortag)
+	UNION ALL SELECT count(*) as color FROM md_packcard, md_cards WHERE fk_user_id = $_SESSION[md_userid] AND fk_card_id = pk_card_id AND find_in_set('G',card_colortag)
 	UNION ALL SELECT count(*) as color FROM md_packcard  WHERE fk_user_id = $_SESSION[md_userid]");
 	for($x = 1; $x<=6; $x++) {
 		$color_values = mysql_fetch_array($color_chk);

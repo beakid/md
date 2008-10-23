@@ -899,9 +899,9 @@ function start_draft($draft_id)
 	while($players = mysql_fetch_array($players_result)) {
 		mysql_query("REPLACE INTO md_draft2user(fk_draft_id, fk_user_id, seat_number) VALUES($draft_id, $players[fk_user_id], ".$x.")");
 		mysql_query("INSERT INTO md_basicland (fk_user_id, fk_draft_id) VALUES ($players[fk_user_id], $draft_id)");
-		add_pack($pack[1],$draft_id, 1, $players[fk_user_id], $x);
-		add_pack($pack[2],$draft_id, 2, $players[fk_user_id], $x);
-		add_pack($pack[3],$draft_id, 3, $players[fk_user_id], $x++);
+		add_pack($pack[1],$draft_id, 1, $players[fk_user_id], $x, "draft");
+		add_pack($pack[2],$draft_id, 2, $players[fk_user_id], $x, "draft");
+		add_pack($pack[3],$draft_id, 3, $players[fk_user_id], $x++, "draft");
 	}
 	
 	//skicka usern till nu startar-draften-om-n√•gra-sekunder-sidan
