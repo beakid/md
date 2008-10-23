@@ -50,7 +50,7 @@
 					}
 					$x++;
 					$mouseover = "onmouseover=\"viewCard('http://www.svenskamagic.com/kortbilder/".$bildexp."/".cardname2filename($card[name],$card[version])."');\"
-						onclick=\"javascript:selectCard('card".$card[pk_packcard_id]."', '".$card[pk_packcard_id]."'); javascript:increaseZindex('card".$card[pk_packcard_id]."');\""
+						onclick=\"javascript:selectCard('card".$card[pk_packcard_id]."', '".$card[pk_packcard_id]."'); javascript:increaseZindex('card".$card[pk_packcard_id]."');\" "
 				?>
 				<div class="card shadow" style="z-index: <?=$x;?>;" id="card<?=$card[pk_packcard_id];?>"><? if($card[packcard_is_foil]) {?><div class="foil" <?=$mouseover;?>></div><? } ?><img id="cardimg_<?=$x;?>" src="http://www.svenskamagic.com/kortbilder/<?=$bildexp;?>/<?=cardname2filename($card[name],$card[version]);?>"<? if(!$card[packcard_is_foil]) echo " ".$mouseover;?> alt="<?=stripslashes($card[name]);?>" class="cardpic" />
 				</div>

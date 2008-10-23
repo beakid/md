@@ -1,3 +1,17 @@
+// Detect if the browser is IE or not.
+// If it is not IE, we assume that the browser is NS.
+var IE = document.all?true:false
+
+// If NS -- that is, !IE -- then set up for mouse capture
+if (!IE) document.captureEvents(Event.MOUSEMOVE)
+
+// Set-up to use getMouseXY function onMouseMove
+document.onmousemove = getMouseXY;
+
+// Temporary variables to hold mouse x-y pos.s
+var tempX = 0
+var tempY = 0
+
 function selectCard(_id, _card_id)
 {
 	var selected = true;
@@ -33,7 +47,7 @@ function selectCard(_id, _card_id)
 		document.getElementById("pickbutton").src = 'http://localhost/~beakid/magicdraft/images/button_pick.png';
 	}
 }
-function viewCard(_card_src)
+function viewCard(_card_src, e)
 {
 	document.getElementById('cardcloseup').innerHTML = '<img src="'+_card_src+'" width="200" />';
 	if(!readCookie("hidecard"))
@@ -60,6 +74,14 @@ function toggleCardViewer(_toggle)
 	{
 		eraseCookie("hidecard");
 		document.getElementById('show_cardviewer').style.display = 'none';
+		if(readCookie("cardposition_top"))
+		{
+			document.getElementById('cardviewer').style.top = readCookie("cardposition_top");
+		}
+		if(readCookie("cardposition_left"))
+		{
+			document.getElementById('cardviewer').style.left = readCookie("cardposition_left");
+		}
 		document.getElementById('cardviewer').style.display = 'block';
 	}
 }
@@ -142,4 +164,40 @@ function draftCard()
 	xajax.$('blackscreen_title').innerHTML = 'Picking card ...';
 	xajax.$('blackscreen').style.display = 'block';	
 	document.draftform.submit();
+}
+function cardcloseup(e)
+{
+	ek=e.keyCode;
+	if(e.altKey && readCookie("hidecard"))
+	{
+		document.getElementById("cardviewer").style.top = (parseFloat(document.coordinates.MouseY.value)) + 'px';
+		document.getElementById("cardviewer").style.left = (parseFloat(document.coordinates.MouseX.value)) + 'px';
+		document.getElementById("cardviewer").style.display = 'block';
+		document.coordinates.MouseY.value = 'zoomed';
+	}
+}
+function cardclosedown(e)
+{
+	if(document.coordinates.MouseY.value == 'zoomed')
+	{
+		document.getElementById("cardviewer").style.display = 'none';
+		document.coordinates.MouseY.value = 0;
+	}
+}
+function getMouseXY(e) {
+  if (IE) { // grab the x-y pos.s if browser is IE
+    tempX = event.clientX + document.body.scrollLeft
+    tempY = event.clientY + document.body.scrollTop
+  } else {  // grab the x-y pos.s if browser is NS
+    tempX = e.pageX
+    tempY = e.pageY
+  }  
+  // catch possible negative values in NS4
+  if (tempX < 0){tempX = 0}
+  if (tempY < 0){tempY = 0} 
+if(document.coordinates.MouseY.value != "zoomed")
+{
+  document.coordinates.MouseX.value = tempX
+  document.coordinates.MouseY.value = tempY
+}
 }

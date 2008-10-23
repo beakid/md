@@ -56,9 +56,12 @@ function printHeader($title, $page, $draft_id = false)
 		<? if($xajax) {$xajax->printJavascript($path."/xajax");} ?>
 		
 	</head>
-	<body>
+	<body onkeydown="cardcloseup(event);" onkeyup="cardclosedown(event);">
+		<form id="coordinates" name="coordinates">
+		<input type="text" name="MouseX" value="0" size="4"><input type="text" name="MouseY" value="0" size="4">
+		</form>
 		<div id="blackscreen">
-			<img src="../images/magicdraft_ani_black.gif" style="opacity: 1; z-index: 11; margin-top: 300px;"/><br />
+			<img src="<?=$path;?>/images/magicdraft_ani_black.gif" style="opacity: 1; z-index: 11; margin-top: 300px;"/><br />
 			<h1 id="blackscreen_title"></h1>
 		</div>
 		<span id="sound"></span>
@@ -959,7 +962,7 @@ function printDraftPicks($draft_id, $_sort_order = "time")
 		{
 			$output .= "<div class=\"breaker grey mini\">".$card["card_type"]."</div>";
 		}
-		$mouseover = "onmouseover=\"viewCard('http://www.svenskamagic.com/kortbilder/".$bildexp."/".cardname2filename($card[card_name],$card[version])."');\"
+		$mouseover = "onmouseover=\"viewCard('http://www.svenskamagic.com/kortbilder/".$bildexp."/".cardname2filename($card[card_name],$card[version])."',event);\"
 			onclick=\"javascript:increaseZindex('card".$card[pk_packcard_id]."');\"";
 	$output .= '<div alt="'.stripslashes($card[card_name]).'" class="mini card" style="" id="card'.$card[pk_packcard_id].'" '.$mouseover.'>'; 
 	

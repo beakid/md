@@ -848,3 +848,7 @@ span.pointer:hover
 	background-image: url('../images/roundbox_grey_bottom.png');
 	background-repeat: no-repeat;
 }
+#coordinates
+{
+	display: none;
+}

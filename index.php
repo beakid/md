@@ -195,5 +195,5 @@ if($_POST["action"] == "draft_pack_of_the_day")
 </body>
 </html>
 <?
-#add_pack("Lorwyn",0,0,0,0,"firstpage");
+#add_pack("Eventide",0,0,0,0,"firstpage");
 ?>
