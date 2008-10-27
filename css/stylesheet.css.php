@@ -259,7 +259,8 @@ span.orange
 }
 #deck, #sideboard
 {
-	width: 95%; height: 1000px;
+	width: 95%; 
+	height: 1400px;
 }
 #deck .card:hover, #sideboard .card:hover
 {
@@ -310,6 +311,31 @@ span.orange
 .blue
 {
 	color: #1977aa;
+}
+.inverted
+{
+	padding: 1px;
+	color: #fff;
+}
+.inverted.gold
+{
+	color: #fff;
+	background-color: #D4AF37;
+}
+.inverted.green
+{
+	color: #fff;
+	background-color: #45c81d;
+}
+.inverted.red
+{
+	color: #fff;
+	background-color: #c62529;
+}
+.inverted.blue
+{
+	color: #fff;
+	background-color: #1977aa;
 }
 .black
 {
@@ -482,6 +508,7 @@ span.pointer:hover
 #show_cardviewer
 {
 	display: none;
+	position: absolute;
 }
 #closecard
 {
@@ -505,7 +532,7 @@ span.pointer:hover
 	width: 90px;
 	text-align: center;
 }
-.draftcue img
+.draftcue img, .yourdrafts img
 {
 	vertical-align: middle;
 }
@@ -513,7 +540,7 @@ span.pointer:hover
 {
 	float: left;
 }
-.draftcue h2
+.draftcue h2, .yourdrafts h2
 {
 	font-family: "Lucida Grande";
 	font-size: 14px;
@@ -820,6 +847,10 @@ span.pointer:hover
 	filter: alpha(opacity=100);
 	cursor: pointer;
 }
+.filter_buttons.small img
+{
+	margin-left: -4px;
+}
 .filter_buttons img
 {
 	opacity: .5;
@@ -851,4 +882,11 @@ span.pointer:hover
 #coordinates
 {
 	display: none;
+}
+hr
+{
+    border: 0;
+	color: #0098E7;
+	background-color: #0098E7;
+	height: 1px;
 }

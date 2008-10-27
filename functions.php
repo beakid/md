@@ -9,7 +9,6 @@ if(!$_SESSION["sort_order"]) $_SESSION["sort_order"] = "color";
 
 
 
-$path = "http://localhost/~beakid/magicdraft";
 require_once("xajax/xajax_core/xajax.inc.php");
 $xajax = new xajax();
 $xajax->registerFunction("login");
@@ -24,6 +23,7 @@ $xajax->registerFunction("confirmDraft");
 $xajax->registerFunction("addSeat");
 $xajax->registerFunction("removeSeat");
 $xajax->registerFunction("filterColors");
+$xajax->registerFunction("hideCard");
 
 $xajax->processRequest();
 
@@ -378,6 +378,7 @@ function printdeck($draft_id, $part = "deck", $_sort_order = false, $_color_arra
 	if($_sort_order == "color") $sort_order = "find_in_set(card_color, 'L,A,G,R,B,U,W') DESC, card_cmcost DESC";
 	elseif($_sort_order == "cost") $sort_order = "card_cmcost";
 	elseif($_sort_order == "cardtype") $sort_order = "card_toughness DESC, card_type";
+	elseif($_sort_order == "rarity") $sort_order = "card_rarity = 'R' DESC, card_rarity = 'U' DESC, card_rarity = 'C' DESC, find_in_set(card_color, 'L,A,G,R,B,U,W') DESC, card_cmcost DESC";
 		
 	include_once("../include/kortparm_functions.php");
 	$cards = mysql_query($apa = "SELECT card_name, '' as version, fk_card_id, exp_name, packcard_is_foil, IF(CHAR_LENGTH(card_color) > 1,'Multi',card_color) AS card_color, pk_packcard_id, card_rarity, card_cmcost, card_type, card_toughness
@@ -405,7 +406,7 @@ function printdeck($draft_id, $part = "deck", $_sort_order = false, $_color_arra
 	else $output .= " (<span id=\"nmb_cards_in_sideboard\">".$nmb_deck."</span> cards)";
 	$output .= "</h2>";
 	
-	if($part == "deck") $output .= "<p class=\"small\">Order by <span class=\"orange pointer\" onclick=\"javascript:setXYposition('indicator',event); javascript:orderDeck('".$part."','".$draft_id."','color',false);\">color</span> | <span class=\"orange pointer\" onclick=\"javascript:setXYposition('indicator',event); javascript:orderDeck('".$part."','".$draft_id."','cost',false);\">cost</span> | <span class=\"orange pointer\" onclick=\"javascript:setXYposition('indicator',event); javascript:orderDeck('".$part."','".$draft_id."','cardtype',false);\">cardtype</span></p>";
+	if($part == "deck") $output .= "<p class=\"small\">Order by <span class=\"orange pointer\" onclick=\"javascript:setXYposition('indicator',event); javascript:orderDeck('".$part."','".$draft_id."','color',false);\">color</span> | <span class=\"orange pointer\" onclick=\"javascript:setXYposition('indicator',event); javascript:orderDeck('".$part."','".$draft_id."','cost',false);\">cost</span> | <span class=\"orange pointer\" onclick=\"javascript:setXYposition('indicator',event); javascript:orderDeck('".$part."','".$draft_id."','cardtype',false);\">cardtype</span> | <span class=\"orange pointer\" onclick=\"javascript:setXYposition('indicator',event); javascript:orderDeck('".$part."','".$draft_id."','rarity',false);\">rarity</span></p>";
 	$stacks_per_row = 5;
 	if($part == "sideboard") 
 	{
@@ -435,7 +436,7 @@ function printdeck($draft_id, $part = "deck", $_sort_order = false, $_color_arra
 		}
 		$bildexp = eregi_replace(' ',"", stripslashes($card[exp_name]));
 		$bildexp = eregi_replace("'","", strtolower($bildexp));
-		if(($card[card_color] != $lastcolor && $_sort_order == "color") || ($card[card_cmcost] != $lastcmcost && $_sort_order == "cost") || ($cardtype != $lastcardtype && $_sort_order == "cardtype"))
+		if(($card[card_color] != $lastcolor && $_sort_order == "color") || ($card[card_cmcost] != $lastcmcost && $_sort_order == "cost") || ($cardtype != $lastcardtype && $_sort_order == "cardtype") || ($card[card_rarity] != $lastrarity && $_sort_order == "rarity"))
 		{
 			if(!$biggestpile) $biggestpile = $x_in_stack;
 			elseif($x_in_stack>$biggestpile) $biggestpile = $x_in_stack;
@@ -464,14 +465,14 @@ function printdeck($draft_id, $part = "deck", $_sort_order = false, $_color_arra
 		$x++;
 		$margintop = $margintop+15;
 		
-		$mouseover = "onmouseover=\"viewCard('http://www.svenskamagic.com/kortbilder/".$bildexp."/".cardname2filename($card[card_name],$card[version])."');\"
+		$mouseover = "onmouseover=\"viewCard('../cardpics/".$bildexp."/".cardname2filename($card[card_name],$card[version])."');\"
 			onclick=\"javascript:increaseZindex('card".$card[pk_packcard_id]."');\"";
 	$output .= '<div alt="'.stripslashes($card[card_name]).'" class="card shadow '.$part.'_card" style="margin-top: '.$margintop.'px; left: '.$marginleft.'px; 
 				position: absolute; z-index: '.$x.'" id="card'.$card[pk_packcard_id].'" '.$mouseover.'>'; 
 	
 	if($card[packcard_is_foil]) { $output .= '<div class="foil" '.$mouseover.'></div>'; } 
 	
-	$output .= '<img id="cardimg_'.$x.'" src="http://www.svenskamagic.com/kortbilder/'.$bildexp.'/'.cardname2filename($card[card_name],$card[version]).'"'; 
+	$output .= '<img id="cardimg_'.$x.'" src="../cardpics/'.$bildexp.'/'.cardname2filename($card[card_name],$card[version]).'"'; 
 	
 	if(!$card[packcard_is_foil]) $output .= " ".$mouseover; 
 	
@@ -481,6 +482,7 @@ function printdeck($draft_id, $part = "deck", $_sort_order = false, $_color_arra
 			</script>';
 	$lastcolor = $card[card_color];
 	$lastcmcost = $card[card_cmcost];
+	$lastrarity = $card[card_rarity];
 	$lastcardtype = $cardtype;
 	}
 
@@ -518,7 +520,7 @@ function printdeck($draft_id, $part = "deck", $_sort_order = false, $_color_arra
 				$margintop = $margintop+15;
 				$output .= '<div alt="'.ucwords($land).'" class="basicland" style="'.$display.'margin-top: '.$margintop.'px; left: '.$marginleft.'px; 
 							position: absolute; z-index: '.$x.'">'; 
-				$output .= '<img id="cardimg_'.$x.'" src="http://www.svenskamagic.com/kortbilder/10thedition/'.$land.'1.full.jpg" alt="'.ucwords($land).'" class="cardpic" /></div>';
+				$output .= '<img id="cardimg_'.$x.'" src="../cardpics/10thedition/'.$land.'1.full.jpg" alt="'.ucwords($land).'" class="cardpic" /></div>';
 			}
 			$output .= "</div>";
 		}
@@ -622,12 +624,12 @@ function drafterList($draft_id)
 		elseif($tiden - $_SESSION["draft_start"] <= 25) $clock = '<img class="clock" src="../images/draftclock_red.gif" alt="" /> <span class="clock_red">Pick your card!</span>';
 		else
 		{
-			$clock = '<img class="clock" src="../images/draftclock_ringing.gif" alt="" /> <span class="clock_ringing">Pick! Pick! Pick!</span>';
+			$clock = '<img class="clock" src="../images/draftclock_ringing.gif" alt="" /> <span class="red inverted">Pick! Pick! Pick!</span>';
 			if($tiden - $_SESSION["draft_start"] > 30) $clock .= "<span id=\"autograb\"></span>";
 		}
 		$output .= "<span id=\"picking\"></span>";
 	}
-	$clock = "";
+#	$clock = "";
 	$output .= "<span id=\"draft_status\">".$draftinfo["draft_status"]."</span>";
 	$output .= $clock.'<script type="text/javascript">setTimeout("reloadDrafterlist('.$draft_id.','.$picking_or_thinking.')",3000);</script>';
 	return $output;
@@ -912,29 +914,54 @@ function start_draft($draft_id)
 	//sista spelarens status måste vara confirmed direkt
 }
 
-function printDraftPicks($draft_id, $_sort_order = "time")
+function printDraftPicks($draft_id, $_sort_order = "time", $_color_array = false)
 {
+	global $draft_info; global $cards_drafted;
+	if(!$_color_array) $_color_array = $_SESSION["color_array"];
+	
 	if($_sort_order == "color") $sort_order = "find_in_set(card_color, 'L,A,G,R,B,U,W') DESC, card_cmcost DESC";
 	elseif($_sort_order == "cost") $sort_order = "card_cmcost";
 	elseif($_sort_order == "cardtype") $sort_order = "card_toughness DESC, card_type";
 	elseif($_sort_order == "time") $sort_order = "fk_pack_id DESC, pick_number DESC";
+
 	$_SESSION["sort_order"] = $_sort_order;
+	$_SESSION["color_array"] = $_color_array;
+	
+	$color_filter = " AND (";
+	foreach($_color_array as $one_color)
+	{
+		$color_filter .= "FIND_IN_SET('".$one_color."',card_color) OR ";
+	}
+	$color_filter = substr($color_filter,0,-4).")";
+	
 		
 	include_once("../include/kortparm_functions.php");
 	$cards = mysql_query($apa = "SELECT card_name, '' as version, fk_card_id, COUNT(fk_card_id) AS nmb, exp_name, packcard_is_foil, IF(CHAR_LENGTH(card_color) > 1,'Multi',card_color) AS card_color, pk_packcard_id, card_rarity, card_cmcost, IF(card_type LIKE 'Creature%','Creature',card_type) AS card_type, card_toughness
 		FROM md_packcard, md_pack,md_cards 
 		INNER JOIN md_exp ON md_cards.fk_exp_id = pk_exp_id
-		WHERE fk_card_id = pk_card_id AND fk_pack_id = pk_pack_id AND md_packcard.fk_user_id = $_SESSION[md_userid] AND md_pack.fk_draft_id = $draft_id
+		WHERE fk_card_id = pk_card_id AND fk_pack_id = pk_pack_id AND md_packcard.fk_user_id = $_SESSION[md_userid] AND md_pack.fk_draft_id = $draft_id AND packcard_hidden = 0
+		$color_filter
 		GROUP BY fk_card_id
 		ORDER BY $sort_order");
 		
 	$nmb_deck = mysql_num_rows($cards);
 
 	$x = 0;
+	if($draft_info[show_picks] == "1" || ($cards_drafted == 15 || $cards_drafted == 30)) {
 	$output = "<h2>My picks</h2>";
 	$output .= "<span class=\"text\" id=\"deckstats\">".deckstats($draft_id)."</span>";
+
+	$output .= "<p class=\"mini\">Order by <span class=\"orange pointer\" onclick=\"javascript:setXYposition('indicator',event); javascript:orderDeck('picks','".$draft_id."','time',true);\">time</span> | <span class=\"orange pointer\" onclick=\"javascript:setXYposition('indicator',event); javascript:orderDeck('picks','".$draft_id."','color',true);\">color</span> | <span class=\"orange pointer\" onclick=\"javascript:setXYposition('indicator',event); javascript:orderDeck('picks','".$draft_id."','cost',true);\">cost</span> | <span class=\"orange pointer\" onclick=\"javascript:setXYposition('indicator',event); javascript:orderDeck('picks','".$draft_id."','cardtype',true);\">type</span></p>";
 	
-	$output .= "<p class=\"mini\">Order by <span class=\"orange pointer\" onclick=\"javascript:setXYposition('indicator',event); javascript:orderDeck('picks','".$draft_id."','time',true);\">time</span> | <span class=\"orange pointer\" onclick=\"javascript:setXYposition('indicator',event); javascript:orderDeck('picks','".$draft_id."','color',true);\">color</span> | <span class=\"orange pointer\" onclick=\"javascript:setXYposition('indicator',event); javascript:orderDeck('picks','".$draft_id."','cost',true);\">cost</span> | <span class=\"orange pointer\" onclick=\"javascript:setXYposition('indicator',event); javascript:orderDeck('picks','".$draft_id."','cardtype',true);\">type</span></p><br />";
+	$output .= '<div class="breaker"></div><div class="filter_buttons small">
+		<img id="color_W" src="../images/button_white_small.png"'; if(array_search("W",$_color_array) !== false) $output .= ' class="active"'; $output .= ' onclick="setXYposition(\'indicator\',event); filterColors(\'W\',\''.$draft_id.'\',\'picks\',\''.$_sort_order.'\');" alt="" />
+		<img id="color_U" src="../images/button_blue_small.png"'; if(array_search("U",$_color_array) !== false) $output .= ' class="active"'; $output .= ' onclick="setXYposition(\'indicator\',event); filterColors(\'U\',\''.$draft_id.'\',\'picks\',\''.$_sort_order.'\');" alt="" />
+		<img id="color_B" src="../images/button_black_small.png"'; if(array_search("B",$_color_array) !== false) $output .= ' class="active"'; $output .= ' onclick="setXYposition(\'indicator\',event); filterColors(\'B\',\''.$draft_id.'\',\'picks\',\''.$_sort_order.'\');" alt="" />
+		<img id="color_R" src="../images/button_red_small.png"'; if(array_search("R",$_color_array) !== false) $output .= ' class="active"'; $output .= ' onclick="setXYposition(\'indicator\',event); filterColors(\'R\',\''.$draft_id.'\',\'picks\',\''.$_sort_order.'\');" alt="" />
+		<img id="color_G" src="../images/button_green_small.png"'; if(array_search("G",$_color_array) !== false) $output .= ' class="active"'; $output .= ' onclick="setXYposition(\'indicator\',event); filterColors(\'G\',\''.$draft_id.'\',\'picks\',\''.$_sort_order.'\');" alt="" />
+		<img id="color_A" src="../images/button_artifacts_small.png"'; if(array_search("A",$_color_array) !== false) $output .= ' class="active"'; $output .= ' onclick="setXYposition(\'indicator\',event); filterColors(\'A\',\''.$draft_id.'\',\'picks\',\''.$_sort_order.'\');" alt="" />
+		<img id="color_L" src="../images/button_lands_small.png"'; if(array_search("L",$_color_array) !== false) $output .= ' class="active"'; $output .= ' onclick="setXYposition(\'indicator\',event); filterColors(\'L\',\''.$draft_id.'\',\'picks\',\''.$_sort_order.'\');" alt="" />
+	</div>';
 	
 	while($card = mysql_fetch_array($cards))
 	{
@@ -962,14 +989,14 @@ function printDraftPicks($draft_id, $_sort_order = "time")
 		{
 			$output .= "<div class=\"breaker grey mini\">".$card["card_type"]."</div>";
 		}
-		$mouseover = "onmouseover=\"viewCard('http://www.svenskamagic.com/kortbilder/".$bildexp."/".cardname2filename($card[card_name],$card[version])."',event);\"
-			onclick=\"javascript:increaseZindex('card".$card[pk_packcard_id]."');\"";
+		$mouseover = "onmouseover=\"viewCard('../cardpics/".$bildexp."/".cardname2filename($card[card_name],$card[version])."',event);\"
+			onclick=\"javascript:hideCard('".$card[pk_packcard_id]."');\"";
 	$output .= '<div alt="'.stripslashes($card[card_name]).'" class="mini card" style="" id="card'.$card[pk_packcard_id].'" '.$mouseover.'>'; 
 	
 	if($card[packcard_is_foil]) $output .= '<div class="foil" '.$mouseover.'></div>';
 	if($card[nmb] > 1) $output .= "<div class=\"cardcount\">".$card[nmb]."</div>";
 	
-	$output .= '<img src="http://www.svenskamagic.com/kortbilder/'.$bildexp.'/'.cardname2filename($card[card_name],$card[version]).'"'; 
+	$output .= '<img src="../cardpics/'.$bildexp.'/'.cardname2filename($card[card_name],$card[version]).'"'; 
 	
 	if(!$card[packcard_is_foil]) $output .= " ".$mouseover; 
 	
@@ -978,6 +1005,8 @@ function printDraftPicks($draft_id, $_sort_order = "time")
 	$lastcmcost = $card[card_cmcost];
 	$lastcardtype = $cardtype;
 	}
+	}
+	
 	$output .="<div class=\"breaker\"></div>";
 	return $output;
 }
@@ -1027,19 +1056,27 @@ function filterColors($_draft_id, $_color, $_part, $remove_it = true)
 {
 	global $_SESSION;
 	$objResponse = new xajaxResponse();
-	if($remove_it == "false") {array_push($_SESSION["color_array"], $_color); array_unique($_SESSION["color_array"]);}
+	if($remove_it == "false")
+	{
+		array_push($_SESSION["color_array"], $_color); array_unique($_SESSION["color_array"]);
+		mysql_query($apa = "UPDATE md_packcard
+			INNER JOIN md_cards ON fk_card_id = pk_card_id
+			SET packcard_hidden = 0
+			WHERE FIND_IN_SET('".$_color."',card_color) AND fk_user_id = $_SESSION[md_userid]");
+	}
 	elseif($remove_it == "true" && array_search($_color,$_SESSION["color_array"]) !== false) 
 	{
 		$key = array_search($_color,$_SESSION["color_array"]);
 		unset($_SESSION["color_array"][$key]);
 	}
-	$output = printdeck($_draft_id, $_part, false, false);
-	$objResponse->assign("sideboard","innerHTML",$output);
+	if($_part == "picks") $output = printDraftPicks($_draft_id, $_SESSION["sort_order"]);
+	else $output = printdeck($_draft_id, $_part, false, false);
+	$objResponse->assign($_part,"innerHTML",$output);
 	return $objResponse;
 }
 function color2class($color_set)
 {
-	if(count($color_set) > 1) return "gold";
+	if(strlen($color_set) > 1) return "gold";
 	else
 	{
 		$color = $color_set[0];
@@ -1053,4 +1090,9 @@ function color2class($color_set)
 		else return "black";
 	}
 }
+function hideCard($_packcard_id)
+{
+	mysql_query("UPDATE md_packcard SET packcard_hidden = 1 WHERE pk_packcard_id = $_packcard_id");
+}
+
 ?>

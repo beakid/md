@@ -12,6 +12,13 @@ document.onmousemove = getMouseXY;
 var tempX = 0
 var tempY = 0
 
+if(!readCookie("cardposition_top"))
+{
+	createCookie("cardposition_top","130px","7");
+	createCookie("cardposition_left","1010px","7");
+}
+
+
 function selectCard(_id, _card_id)
 {
 	var selected = true;

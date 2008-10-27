@@ -46,13 +46,13 @@
 					{
 						$bildexp = eregi_replace(' ',"", stripslashes($card[exp]));
 						$bildexp = eregi_replace("'","", strtolower($bildexp));
-						$firstcard_src = "http://www.svenskamagic.com/kortbilder/".$bildexp."/".cardname2filename($card[name],$card[version]);
+						$firstcard_src = "../cardpics/".$bildexp."/".cardname2filename($card[name],$card[version]);
 					}
 					$x++;
-					$mouseover = "onmouseover=\"viewCard('http://www.svenskamagic.com/kortbilder/".$bildexp."/".cardname2filename($card[name],$card[version])."');\"
+					$mouseover = "onmouseover=\"viewCard('../cardpics/".$bildexp."/".cardname2filename($card[name],$card[version])."');\"
 						onclick=\"javascript:selectCard('card".$card[pk_packcard_id]."', '".$card[pk_packcard_id]."'); javascript:increaseZindex('card".$card[pk_packcard_id]."');\" "
 				?>
-				<div class="card shadow" style="z-index: <?=$x;?>;" id="card<?=$card[pk_packcard_id];?>"><? if($card[packcard_is_foil]) {?><div class="foil" <?=$mouseover;?>></div><? } ?><img id="cardimg_<?=$x;?>" src="http://www.svenskamagic.com/kortbilder/<?=$bildexp;?>/<?=cardname2filename($card[name],$card[version]);?>"<? if(!$card[packcard_is_foil]) echo " ".$mouseover;?> alt="<?=stripslashes($card[name]);?>" class="cardpic" />
+				<div class="card shadow" style="z-index: <?=$x;?>;" id="card<?=$card[pk_packcard_id];?>"><? if($card[packcard_is_foil]) {?><div class="foil" <?=$mouseover;?>></div><? } ?><img id="cardimg_<?=$x;?>" src="../cardpics/<?=$bildexp;?>/<?=cardname2filename($card[name],$card[version]);?>"<? if(!$card[packcard_is_foil]) echo " ".$mouseover;?> alt="<?=stripslashes($card[name]);?>" class="cardpic" />
 				</div>
 				<input type="hidden" name="cardarray[<?=$card[fk_card_id];?>]" value="<?=$card[stats_rating];?>" />
 				<input type="hidden" name="colorarray[<?=$card[fk_card_id];?>]" value="<?=$card[colortag];?>" />
@@ -87,14 +87,21 @@
 		<div id="right"><span class="small" id="show_cardviewer"><img src="<?=$path;?>/images/zoom.png" alt="" style="vertical-align: middle;"> <span class="blue pointer" onclick="toggleCardViewer('show');">Show cardviewer</span></span>
 			<div id="cardviewer" class="mini"><div onclick="toggleCardViewer('hide');" id="closecard"><img src="<?=$path;?>/images/close.png"></div><div id="cardcloseup"><img src="<?=$firstcard_src;?>"></div></div>
 			
-			<div class="roundbox grey">
-			
-			<div id="picks">
-				<?=printDraftPicks($draft_id, $_SESSION["sort_order"])?>
-				<div class="breaker"></div>
-			</div>
-			</div>
-			<div class="roundbox grey bottom"></div>
+			<?
+			$cards_drafted = mysql_num_rows(mysql_query($apa = "SELECT fk_pack_id FROM md_packcard 
+				INNER JOIN md_pack ON pk_pack_id = fk_pack_id
+				WHERE md_packcard.fk_user_id = $_SESSION[md_userid] AND md_pack.fk_draft_id = $draft_id"));
+			if($draft_info["show_picks"] == 1 || ($cards_drafted == 15 || $cards_drafted == 30))
+			{
+			?>
+				<div class="roundbox grey">
+				<div id="picks">
+					<?=printDraftPicks($draft_id, $_SESSION["sort_order"])?>
+					<div class="breaker"></div>
+				</div>
+				</div>
+				<div class="roundbox grey bottom"></div>
+			<? } ?>
 			
 		<script type="text/javascript">
 		if(readCookie("cardposition_top"))

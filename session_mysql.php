@@ -1,7 +1,7 @@
 <?
 //till för att låsa ute en viss ip
 #if($REMOTE_ADDR == '127.0.0.1') die;
-$base = "http://localhost/~beakid";
+$path = "http://localhost/~beakid/magicdraft";
 
 $SESS_DBH = "";
 $SESS_LIFE = 3600;

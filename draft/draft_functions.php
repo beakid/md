@@ -6,17 +6,6 @@ include_once("../functions.php");
 
 
 if($_POST[action] == "create_draft") {
-	if($sealed == "yes"){
-		//insert data for now
-		//echo "hej";
-		mysql_query("INSERT INTO md_draft(draft_password, draft_is_tournament, draft_name, max_players, show_picks, draft_speed, draft_status) VALUES('$password', $tour_after, 'SEALED', 1, $show_picks, $speed, 3)");
-
-		//join player
-		mysql_query("INSERT INTO md_draft2user(fk_draft_id, fk_user_id) VALUES(".mysql_insert_id().", $_SESSION[md_userid])");
-		add_tourpack();	
-	} else {
-	
-
 	//verify data - yawn
 
 
@@ -24,7 +13,6 @@ if($_POST[action] == "create_draft") {
 	$draft_name_result = mysql_query("SELECT exp_shortname FROM md_exp WHERE pk_exp_id = $pack1 UNION ALL SELECT exp_shortname FROM md_exp WHERE pk_exp_id = $pack2 UNION ALL SELECT exp_shortname FROM md_exp WHERE pk_exp_id = $pack3");
 	while($draft_name_values = mysql_fetch_array($draft_name_result)) {
 		$draft_name = $draft_name . " " . $draft_name_values[exp_shortname];
-	}
 	ltrim($draft_name);
 	
 	
@@ -42,6 +30,20 @@ if($_POST[action] == "create_draft") {
 	}
 	header("Location: draft.php?id=".$draft_id);
 	die();
+}
+elseif($_POST["action"] == "create_sealed")
+{
+		//insert data for now
+		$sealed_name = mysql_result(mysql_query("SELECT exp_shortname FROM md_exp WHERE pk_exp_id = $tourpack"),0);
+		mysql_query("INSERT INTO md_draft(draft_name, max_players, draft_status, pack_1, pack_2, pack_3, draft_start, draft_is_sealed) VALUES('Sealed $sealed_name', 1, 3, '$tourpack', '$boosterpack1', '$boosterpack2', NOW(), 1)");
+		$draft_id = mysql_insert_id();
+
+		//join player
+		mysql_query("INSERT INTO md_basicland (fk_user_id, fk_draft_id) VALUES ($_SESSION[md_userid], $draft_id)");
+		mysql_query("INSERT INTO md_draft2user(fk_draft_id, fk_user_id) VALUES('$draft_id', $_SESSION[md_userid])");
+		add_tourpack($draft_id,$tourpack,$boosterpack1,$boosterpack2);	
+		header("Location: draft.php?id=".$draft_id);
+		die();
 }
 
 if($action == "join_draft") {

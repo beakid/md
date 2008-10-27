@@ -92,7 +92,7 @@ function addCard2Deck(_card_id, _part, _draft_id)
 function orderDeck(_part, _draft_id, _order_by, _only_one_side)
 {
 	xajax_sortDeck(_part, _draft_id, _order_by);
-	setTimeout("makedraggables('"+_part+"')",500);
+	if(_part != "picks") setTimeout("makedraggables('"+_part+"')",500);
 	if(!_only_one_side)
 	{
 		otherpart = "sideboard";
@@ -148,4 +148,9 @@ function filterColors(_color,_draft_id,_part,_order_by)
 	setTimeout("makedraggables('"+_part+"')",500);
 	setTimeout("xajax.$('indicator').style.display = 'none';",500);
 	return false;
+}
+function hideCard(_packcard_id)
+{
+	new Effect.DropOut('card'+_packcard_id);
+	xajax_hideCard(_packcard_id);
 }

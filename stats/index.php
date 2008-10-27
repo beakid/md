@@ -62,7 +62,7 @@ $exp_info = mysql_fetch_array(mysql_query("SELECT * FROM md_exp WHERE pk_exp_id 
 					while($card = mysql_fetch_array($cards))
 					{
 						$xet++; $col++;
-						$bildurl = "http://www.svenskamagic.com/kortbilder/".$bildexp."/".cardname2filename($card[card_name], $card[version]);
+						$bildurl = "../cardpics/".$bildexp."/".cardname2filename($card[card_name], $card[version]);
 						if(!$firstcard_src) $firstcard_src = $bildurl;
 						
 					?>

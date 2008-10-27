@@ -8,11 +8,16 @@ if($_POST["action"] == "draft_pack_of_the_day")
 {
 	if(!$_POST["chosen_card"])
 	{
-		echo errormess("Choose a card");
+		$errormess = errormess("Choose a card");
 	}
 	else
 	{
-		mysql_query("INSERT INTO md_vote (fk_card_id, fk_pack_id, vote_ip, fk_user_id) VALUES ('$_POST[chosen_card]','$_POST[pack_id]','$_SERVER[REMOTE_ADDR]','$_SESSION[md_userid]')");
+		if($_SESSION["md_userid"])
+		$voted_before = mysql_num_rows(mysql_query("SELECT fk_card_id FROM md_vote WHERE fk_user_id = $_SESSION[md_userid] AND fk_pack_id = $_POST[pack_id]")); else $voted_before = mysql_num_rows(mysql_query("SELECT fk_card_id FROM md_vote WHERE vote_ip = '$_SERVER[REMOTE_ADDR]' AND fk_pack_id = $_POST[pack_id]"));
+		echo $apas;
+		
+		if($voted_before) $errormess = errormess("You have already voted")."<br /><br />";
+		else mysql_query("INSERT INTO md_vote (fk_card_id, fk_pack_id, vote_ip, fk_user_id) VALUES ('$_POST[chosen_card]','$_POST[pack_id]','$_SERVER[REMOTE_ADDR]','$_SESSION[md_userid]')");
 	}
 }
 ?>
@@ -85,13 +90,13 @@ if($_POST["action"] == "draft_pack_of_the_day")
 					{
 						$bildexp = eregi_replace(' ',"", stripslashes($card[exp]));
 						$bildexp = eregi_replace("'","", strtolower($bildexp));
-						$firstcard_src = "http://www.svenskamagic.com/kortbilder/".$bildexp."/".cardname2filename($card[name],$card[version]);
+						$firstcard_src = "cardpics/".$bildexp."/".cardname2filename($card[name],$card[version]);
 					}
 					$x++;
-					$mouseover = "onmouseover=\"viewCard('http://www.svenskamagic.com/kortbilder/".$bildexp."/".cardname2filename($card[name],$card[version])."');\"";
+					$mouseover = "onmouseover=\"viewCard('cardpics/".$bildexp."/".cardname2filename($card[name],$card[version])."');\"";
 					if(!$chosen_card) $mouseover .= " onclick=\"javascript:selectCard('card".$card[pk_packcard_id]."', '".$card[fk_card_id]."'); javascript:increaseZindex('card".$card[pk_packcard_id]."');\""
 				?>
-				<div class="card shadow" style="z-index: <?=$x;?>;" id="card<?=$card[pk_packcard_id];?>"><? if($card[packcard_is_foil]) {?><div class="foil" <?=$mouseover;?>></div><? } ?><img id="cardimg_<?=$x;?>" src="http://www.svenskamagic.com/kortbilder/<?=$bildexp;?>/<?=cardname2filename($card[name],$card[version]);?>"<? if(!$card[packcard_is_foil]) echo " ".$mouseover;?> alt="<?=stripslashes($card[name]);?>" class="cardpic" />
+				<div class="card shadow" style="z-index: <?=$x;?>;" id="card<?=$card[pk_packcard_id];?>"><? if($card[packcard_is_foil]) {?><div class="foil" <?=$mouseover;?>></div><? } ?><img id="cardimg_<?=$x;?>" src="cardpics/<?=$bildexp;?>/<?=cardname2filename($card[name],$card[version]);?>"<? if(!$card[packcard_is_foil]) echo " ".$mouseover;?> alt="<?=stripslashes($card[name]);?>" class="cardpic" />
 				</div>
 					<script type="text/javascript">
 					var highest_zindex = 150;
@@ -134,9 +139,6 @@ if($_POST["action"] == "draft_pack_of_the_day")
 		if(readCookie("cardposition_top"))
 		{
 			document.getElementById('cardviewer').style.top = readCookie("cardposition_top");
-		}
-		if(readCookie("cardposition_left"))
-		{
 			document.getElementById('cardviewer').style.left = readCookie("cardposition_left");
 		}
 		new Draggable('cardviewer',{onEnd: function (dragObj, event) 
@@ -150,6 +152,8 @@ if($_POST["action"] == "draft_pack_of_the_day")
 			document.getElementById('show_cardviewer').style.display = "inline";
 		}
 		</script>
+			<div id="pick_result">
+		<?=$errormess;?>
 			<? if($chosen_card)
 			{
 					$info = mysql_fetch_array(mysql_query("SELECT card_name, count(fk_card_id) AS nmb, card_color FROM md_vote
@@ -164,7 +168,6 @@ if($_POST["action"] == "draft_pack_of_the_day")
 					GROUP BY fk_card_id
 					ORDER BY nmb DESC");
 			?>
-				<div id="pick_result">
 					<h2>You picked<br />
 					<span class="<?=color2class($info[card_color]);?>"><?=$info["card_name"]?></span><br />
 					<span class="grey"><? if($info[nmb] == 1) { ?>You were the first to pick that card!<? } elseif($nmb_voters > 1) { ?><?=round(($info[nmb]/$nmb_voters)*100)?>% chose
@@ -176,7 +179,7 @@ if($_POST["action"] == "draft_pack_of_the_day")
 							$bildexp = eregi_replace("'","", strtolower($bildexp));
 							
 							?>
-							<li><span onmouseover="viewCard('http://www.svenskamagic.com/kortbilder/<?=$bildexp;?>/<?=cardname2filename($pick[card_name],$pick[version]);?>')" class="pointer <?=color2class($pick[card_color]);?>"><?=$pick[card_name];?></span>
+							<li><span onmouseover="viewCard('cardpics/<?=$bildexp;?>/<?=cardname2filename($pick[card_name],$pick[version]);?>')" class="pointer <?=color2class($pick[card_color]);?>"><?=$pick[card_name];?></span>
 							    <br /><span class="grey"><?=round($pick[nmb]/$nmb_voters*100)?>% (<?=$pick[nmb];?>)</span></li>
 							<?
 						}
@@ -185,9 +188,9 @@ if($_POST["action"] == "draft_pack_of_the_day")
 					</p>
 					<? if(!$_SESSION["md_userid"]) {?>
 					<p class="grey small">Not you who picked this card? Login to pick your own card!</p><? } ?>
-				</div>
 			<?
 			}?>
+		</div>
 			<div class="breaker"></div>
 		</div>
 		<div class="breaker"></div>
@@ -195,5 +198,5 @@ if($_POST["action"] == "draft_pack_of_the_day")
 </body>
 </html>
 <?
-#add_pack("Eventide",0,0,0,0,"firstpage");
+#add_pack("Shards of Alara",0,0,0,0,"firstpage");
 ?>

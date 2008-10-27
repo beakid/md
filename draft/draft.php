@@ -5,7 +5,7 @@ include("../include/kortparm_functions.php");
 //man utgår från draft-id som kontrolleras mot usern och sen visar man var man är i draften eller visas kortpoolen för lekbygge ->
 if($_SESSION[md_userid]) $my_current_draft_id = @mysql_result(mysql_query("SELECT fk_draft_id FROM md_draft2user 
 	INNER JOIN md_draft ON pk_draft_id = fk_draft_id
-	WHERE fk_user_id = $_SESSION[md_userid]"),0);
+	WHERE fk_user_id = $_SESSION[md_userid] AND draft_status < 3"),0);
 
 if(!$_GET[id])
 {
@@ -30,7 +30,7 @@ include("draft_functions.php");
 if($_SESSION[md_userid]) @$mystatus = mysql_result(mysql_query("SELECT seat_status FROM md_draft2user WHERE fk_user_id = $_SESSION[md_userid] AND fk_draft_id = $draft_id"),0);
 #kolla om man har tillgång till draften
 $allowed_id = $draft_id;
-if($draft_info[draft_status] > 0 && $my_current_draft_id != $draft_id) { $allowed_id = false;}
+if($draft_info[draft_status] > 0 && $my_current_draft_id && $my_current_draft_id != $draft_id) { $allowed_id = false;}
 ?>
 <?=printHeader("MagicDraft","draft",$allowed_id)?>
 	<div id="content"<? if($draft_info[draft_status] == 1) echo " class=\"blackback\"";?>>

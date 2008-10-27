@@ -36,8 +36,7 @@ if($_SESSION[md_userid]) $my_current_draft_id = @mysql_result(mysql_query("SELEC
 					else
 					{
 					#default packs
-					$pack1 = $pack2 = 85;
-					$pack3 = 86;
+					$pack1 = $pack2 = $pack3 = 87;
 					?>
 				<form action="index.php" method="post">
 				<p class="text">
@@ -81,20 +80,20 @@ if($_SESSION[md_userid]) $my_current_draft_id = @mysql_result(mysql_query("SELEC
 							<option value="<?=$exp[pk_exp_id];?>"<? if($pack3 == $exp[pk_exp_id]) echo " selected";?>><?=$exp[exp_name];?></option>
 						<? } ?>
 					</select><br /><br />
-										<strong>Tournament after?</strong><br />
-					<input type="radio" name="tour_after" value="1" checked="checked" /> Yes<br />
-					<input type="radio" name="tour_after" value="0" /> No, just draft<br /><br />
+					<div class="mini">
+					<strong>Tournament after?</strong><br />
+					<input type="radio" name="tour_after" value="0" checked="checked" /> No, just draft<br />
+					<input type="radio" name="tour_after" value="1"/> Yes<br /><br />
 					<strong>Show picks?</strong><br />
-					<input type="radio" name="show_picks" value="1" /> Yes<br />
-					<input type="radio" name="show_picks" value="0" checked="checked" /> No<br /><br />
+					<input type="radio" name="show_picks" value="1" checked="checked" /> Yes<br />
+					<input type="radio" name="show_picks" value="0" /> Only between packs<br /><br />
 					<strong>Speed?</strong><br />
 					<input type="radio" name="speed" value="0" /> Slow<br />
 					<input type="radio" name="speed" value="1" checked="checked" /> Normal<br />
 					<input type="radio" name="speed" value="2" /> Fast<br /><br />
-					<strong>Sealed (optional)</strong><br />
-					<input type="checkbox" name="sealed" value="yes"/><br /><br />
 					<strong>Password (optional)</strong><br />
-					<input type="text" name="password" size="16" /><br /><br />										
+					<input type="text" name="password" size="16" />
+					</div><br />
 					<input type="hidden" name="action" value="create_draft">
 					<input type="image" src="<?=$path;?>/images/button_create.png" alt="Create" value="submit" />
 				</p>
@@ -210,10 +209,117 @@ if($_SESSION[md_userid]) $my_current_draft_id = @mysql_result(mysql_query("SELEC
 				
 		</div>
 		<div id="right_small">
+			<? if($_SESSION[md_userid]) {?>
 			<div class="box blue">
 				<img src="<?=$path;?>/images/header_yourdrafts.png" class="headerpic" alt="Your drafts" />
+				
+				<?
+				$drafts = mysql_query("SELECT *,
+				CONCAT(IF(
+							hour( timediff(draft_start, now()) ) > 0,
+							CONCAT(hour( timediff(draft_start, now()) ),' hour'),
+							''
+						),
+						IF(
+							hour( timediff(draft_start, now()) ) > 1,
+							's',
+							''
+						),
+						' ',
+						IF( (minute( timediff(draft_start, now()) ) > 0 OR hour( timediff(draft_start, now()) ) < 1) AND hour( timediff(draft_start, now()) ) > 0,
+						' and ',
+						''),
+						IF(
+							minute( timediff(draft_start, now()) ) > 0 OR hour( timediff(draft_start, now()) ) < 1,
+							CONCAT(minute( timediff(draft_start, now()) ),' minute'),
+							''
+						),
+						IF(
+							minute( timediff(draft_start, now()) ) > 1 OR minute( timediff(draft_start, now()) ) = 0,
+							's',
+							''
+						)
+					)
+				AS going_on_for
+				FROM md_draft2user
+				INNER JOIN md_draft ON fk_draft_id = pk_draft_id
+				WHERE fk_user_id = $_SESSION[md_userid]
+				ORDER BY pk_draft_id DESC");
+				if(!mysql_num_rows($drafts)) echo "<br /><p class=\"text\">You haven't played any drafts yet.</p>";
+				while($draft = mysql_fetch_array($drafts))
+				{
+					$players = mysql_query("SELECT user_name, user_country, fk_user_id FROM md_draft2user 
+					INNER JOIN md_user ON pk_user_id = fk_user_id
+					WHERE fk_draft_id = $draft[pk_draft_id]");
+				?>
+					<div class="yourdrafts">
+						<div class="small">
+							<img src="<?=$path;?>/images/<? if($draft[draft_is_sealed]) echo "tour"; ?>pack_<?=$draft[pack_1];?>.jpg" alt=""/><? if($draft[draft_is_sealed]) echo " ";?><img src="<?=$path;?>/images/pack_<?=$draft[pack_2];?>.jpg" alt=""/><img src="<?=$path;?>/images/pack_<?=$draft[pack_3];?>.jpg" alt=""/></div>
+						<div class="text small"><h2><?=$draft[draft_name];?></h2>
+							<? if($draft[draft_status] == 3) {?>
+								<span class="gold inverted">Building deck!</span><? }
+								elseif($draft[draft_status] != 0 && $draft[draft_status] < 3) {?>
+									<span class="green inverted">Drafting!</span><? }
+								elseif($draft[draft_status] == 0) {?>
+									<span class="red inverted">Waiting to start...</span><? } ?>
+								<? if(!$draft[draft_is_sealed]) {?><br />
+						<span class="nmb_players"><?=mysql_num_rows($players);?> players</span><? } ?>
+						<? if(trim($draft["going_on_for"]) != "") {?><br />
+						<i class="white mini">Started <?=$draft["going_on_for"];?> ago</i><? } ?>
+						
+						<? if(!$draft[draft_is_sealed]) {?><br /><span class="grey mini"><? if(!$draft[draft_is_tournament]) {?>Only draft<? } else {?>Draft + Tournament<? }?></span><? } ?><br />
+						<a href="draft.php?id=<?=$draft[pk_draft_id];?>" class="imglink"><img src="<?=$path;?>/images/button_goto.png" onmouseover="this.src='../images/button_goto_hover.png';" style="margin-left: -3px;" onmouseout="this.src='../images/button_goto.png';" alt="Go to!" /></a>
+						<hr>
+						
+						</div>
+					</div>
+					<div class="breaker"></div>
+				<?
+				}
+				?>
+			</div>
+			<? } ?>
+			<div class="box olive">
+				<img src="<?=$path;?>/images/header_sealed.png" alt="Sealed Deck" class="headerpic" />
+				<p class="small">Just want to rip a Sealed Deck and make a deck?</p><br />
+				<div class="text">
+				<form action="index.php" method="post">
+				<strong>Tournament pack</strong><br />
+				<select name="tourpack" size="1" style="width: 140px;">
+					<? 
+					$exps = mysql_query("SELECT * FROM md_exp WHERE exp_has_tourpack = 1 ORDER BY exp_release DESC");
+					while($exp = mysql_fetch_array($exps))
+					{
+						?>
+						<option value="<?=$exp[pk_exp_id];?>"<? if($tourpack == $exp[pk_exp_id]) echo " selected";?>><?=$exp[exp_name];?></option>
+					<? } ?>
+				</select><br />
+				<strong>Boosters</strong><br />
+				<select name="boosterpack1" size="1" style="width: 140px;">
+					<? 
+					$exps = mysql_query("SELECT * FROM md_exp ORDER BY exp_release DESC");
+					while($exp = mysql_fetch_array($exps))
+					{
+						?>
+						<option value="<?=$exp[pk_exp_id];?>"<? if($boosterpack1 == $exp[pk_exp_id]) echo " selected";?>><?=$exp[exp_name];?></option>
+					<? } ?>
+				</select><br />
+				<select name="boosterpack2" size="1" style="width: 140px;">
+					<? 
+					$exps = mysql_query("SELECT * FROM md_exp ORDER BY exp_release DESC");
+					while($exp = mysql_fetch_array($exps))
+					{
+						?>
+						<option value="<?=$exp[pk_exp_id];?>"<? if($boosterpack2 == $exp[pk_exp_id]) echo " selected";?>><?=$exp[exp_name];?></option>
+					<? } ?>
+				</select><br /><br />
+				<input type="hidden" name="action" value="create_sealed">
+				<input type="image" src="<?=$path;?>/images/button_create2.png" alt="Create" value="submit" />
+				</form>
+				</div>
 			</div>
 		</div>
+		
 		<div class="breaker"></div>
 	</div>
 </body>

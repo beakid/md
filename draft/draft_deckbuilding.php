@@ -19,7 +19,7 @@
 	
 		$bildexp = eregi_replace(' ',"", stripslashes($first_card[exp]));
 		$bildexp = eregi_replace("'","", strtolower($bildexp));
-		$firstcard_src = "http://www.svenskamagic.com/kortbilder/".$bildexp."/".cardname2filename($first_card[name],$first_card[version]);
+		$firstcard_src = "../cardpics/".$bildexp."/".cardname2filename($first_card[name],$first_card[version]);
 		?>
 		<div id="right" style="width: 350px;">
 			<div style="float: right;" class="small" id="show_cardviewer"><img src="<?=$path;?>/images/zoom.png" alt="" style="vertical-align: middle;"> <span class="text blue pointer" onclick="toggleCardViewer('show');">Show cardviewer</span></div>
@@ -59,5 +59,5 @@
 			{ addCard2Deck(element.id, 'sideboard','<?=$draft_id;?>'); }});
 		</script>
 	 
-		
+		<div class="breaker"></div>
 		</div>

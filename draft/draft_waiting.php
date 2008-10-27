@@ -44,14 +44,14 @@
 
 	#slumpar fram raritet och expansion typ
 	if(rand(1,2) == 1) $rand_rarity = "U"; else $rand_rarity = "C";
-	$exp_name = "Eventide";
+	$exp_name = "Shards of Alara";
 
 	#skapar packet
 	mysql_query("INSERT INTO md_pack(fk_draft_id, fk_exp_id, pack_number, fk_user_id, seat_number, pack_type) SELECT '', pk_exp_id, '1', '$_SESSION[md_userid]', '1', 'best_of_three' FROM md_exp WHERE exp_name = '$exp_name'");
 	$pk_pack_id = mysql_insert_id();
 	#sparar in 3 kort
 	mysql_query("INSERT INTO md_packcard(fk_pack_id, fk_card_id) 
-	SELECT '$pk_pack_id', pk_card_id FROM md_cards INNER JOIN md_exp ON fk_exp_id = pk_exp_id WHERE exp_name = '$exp_name' AND card_rarity = '$rand_rarity' ORDER BY rand() LIMIT 3");
+	SELECT '$pk_pack_id', pk_card_id FROM md_cards INNER JOIN md_exp ON fk_exp_id = pk_exp_id WHERE exp_name = '$exp_name' AND card_rarity = '$rand_rarity' AND card_type NOT LIKE 'Basic%' ORDER BY rand() LIMIT 3");
 	#listar dem
 	$list_them = mysql_query("SELECT * FROM md_packcard
 	INNER JOIN md_cards ON fk_card_id = pk_card_id
@@ -65,10 +65,10 @@
 		{
 			$bildexp = eregi_replace(' ',"", stripslashes($card[exp_name]));
 			$bildexp = eregi_replace("'","", strtolower($bildexp));
-			$firstcard_src = "http://www.svenskamagic.com/kortbilder/".$bildexp."/".cardname2filename($card[card_name],$card[card_version]);
+			$firstcard_src = "../cardpics/".$bildexp."/".cardname2filename($card[card_name],$card[card_version]);
 		}
 	?>
-		<div class="card shadow" style="z-index: 1;" id="card<?=$xet;?>"><img id="cardimg_<?=$xet;?>" src="http://www.svenskamagic.com/kortbilder/<?=$bildexp;?>/<?=cardname2filename($card[card_name],$card[card_version]);?>" onmouseover="viewCard('http://www.svenskamagic.com/kortbilder/<?=$bildexp;?>/<?=cardname2filename($card[card_name],$card[card_version]);?>');"
+		<div class="card shadow" style="z-index: 1;" id="card<?=$xet;?>"><img id="cardimg_<?=$xet;?>" src="../cardpics/<?=$bildexp;?>/<?=cardname2filename($card[card_name],$card[card_version]);?>" onmouseover="viewCard('../cardpics/<?=$bildexp;?>/<?=cardname2filename($card[card_name],$card[card_version]);?>');"
 				onclick="javascript:selectCard('card<?=$xet;?>', '<?=$card[pk_card_id];?>'); javascript:increaseZindex('card<?=$xet;?>');" alt="<?=$card[card_name];?>" class="cardpic" />
 		</div>
 	<?
@@ -118,7 +118,7 @@
 				}
 				
 				$list_output .= "
-				<li><span onmouseover=\"viewCard('http://www.svenskamagic.com/kortbilder/".$bildexp."/".cardname2filename($pick[card_name],$pick[version])."')\" class=\"pointer ".color2class($pick[card_color])."\">".$pick[card_name]."</span>
+				<li><span onmouseover=\"viewCard('../cardpics/".$bildexp."/".cardname2filename($pick[card_name],$pick[version])."')\" class=\"pointer ".color2class($pick[card_color])."\">".$pick[card_name]."</span>
 				    <br /><span class=\"grey\">".$pick[stats_rating]." points</span></li>";
 			}
 			?>
